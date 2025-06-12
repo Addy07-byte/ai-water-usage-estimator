@@ -2,7 +2,10 @@ import streamlit as st
 import openai
 
 # 🔐 Paste your OpenAI API Key here
-client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = openai.OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"],
+    organization=st.secrets.get("OPENAI_ORG_ID", None)
+)
 # Estimated energy usage per model (in kWh per query)
 MODEL_ENERGY_KWH = {
     "gpt-3.5-turbo": 0.02,
