@@ -20,9 +20,9 @@ def estimate_water(model):
     return round(kwh * WATER_PER_KWH, 3)
 
 # Streamlit UI
-st.set_page_config(page_title="AI Water Usage Chatbot", page_icon="💧")
-st.title("💧 AI Water Usage Chatbot")
-st.write("🌍 Discover how much water every AI query consumes.")
+st.set_page_config(page_title="AI Water Usage Estimator", page_icon="💧")
+st.markdown("## AI Water Usage Estimator")
+st.caption("*Uncover the hidden water cost behind every AI query.*")
 
 prompt = st.text_area("Enter your question:")
 model = st.selectbox("Select Model:", ["gpt-3.5-turbo", "gpt-4o"])
