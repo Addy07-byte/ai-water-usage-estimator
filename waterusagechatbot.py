@@ -61,12 +61,6 @@ if st.button("Ask AI"):
         st.subheader("💧 Estimated Water Used")
         st.metric(label="Liters", value=f"{water_used} L")
         st.caption(f"≈ {round(water_used * 33.8, 1)} fluid ounces (~oz)")
-
-        # 📊 Compare Models
-        with st.expander("💡 Compare Water Use Across Models"):
-            for m in MODEL_ENERGY_KWH:
-                st.write(f"**{m}** ➤ {estimate_water(m)} L")
-
     else:
         st.warning("Please enter a question.")
 
