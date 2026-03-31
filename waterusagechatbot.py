@@ -7,17 +7,23 @@ client = openai.OpenAI(
     organization=st.secrets.get("OPENAI_ORG_ID", None)
 )
 
-# ⚡ Constants
-MODEL_ENERGY_KWH = {
-    "gpt-3.5-turbo": 0.02,
-    "gpt-4o": 0.04
-}
-WATER_PER_KWH = 1.8  # liters per kWh
+# ============================================
+# ML MODEL — trained with gradient descent
+# w and b found automatically from real token data
+# f(tokens) = w * tokens + b
+# ============================================
+W_TRAINED = 0.000519
+B_TRAINED = 0.000001
 
-# 💧 Estimate water used
-def estimate_water(model):
-    kwh = MODEL_ENERGY_KWH.get(model, 0.02)
-    return round(kwh * WATER_PER_KWH, 3)
+def estimate_water(total_tokens):
+    """
+    Predicts water usage using trained linear regression model.
+    f(tokens) = w * tokens + b
+    w and b found by gradient descent on real API token data.
+    """
+    water = W_TRAINED * total_tokens + B_TRAINED
+    return round(water, 6)
+
 
 # 🧠 Page setup
 st.set_page_config(page_title="AI Water Usage Estimator", page_icon="💧")
@@ -50,18 +56,34 @@ if st.button("Ask AI"):
             messages=[{"role": "user", "content": prompt}]
         )
         answer = response.choices[0].message.content
-        water_used = estimate_water(model)
 
-        # 🧠 AI Response
+        # ADD THIS — capture token data
+        prompt_tokens = response.usage.prompt_tokens
+        completion_tokens = response.usage.completion_tokens
+        total_tokens = response.usage.total_tokens
+
+        water_used = estimate_water(total_tokens)
+
+        # AI Response
         st.markdown("---")
         st.subheader("🧠 AI Response")
         st.write(answer)
 
-        # 💧 Water Estimate
+        # Water Estimate
         st.subheader("💧 Estimated Water Used")
         st.metric(label="Liters", value=f"{water_used} L")
         st.caption(f"≈ {round(water_used * 33.8, 1)} fluid ounces (~oz)")
+
+        # ADD THIS — show token data
+        st.markdown("---")
+        st.subheader("🔢 Token Usage")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Prompt Tokens", prompt_tokens)
+        col2.metric("Completion Tokens", completion_tokens)
+        col3.metric("Total Tokens", total_tokens)
+
     else:
         st.warning("Please enter a question.")
+
 
 
