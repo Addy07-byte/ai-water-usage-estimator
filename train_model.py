@@ -94,3 +94,11 @@ print(f"533 tokens → {w_final*533 + b_final:.6f} liters")
 print(f"\nCopy these into your Streamlit app:")
 print(f"W_TRAINED = {w_final}")
 print(f"B_TRAINED = {b_final}")
+
+# Plot cost curve
+plt.plot(J_hist)
+plt.title('Cost vs Iterations')
+plt.xlabel('Iteration')
+plt.ylabel('Cost J(w,b)')
+plt.savefig('cost_curve.png')
+plt.show()
