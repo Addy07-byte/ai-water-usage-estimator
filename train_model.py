@@ -102,3 +102,33 @@ plt.xlabel('Iteration')
 plt.ylabel('Cost J(w,b)')
 plt.savefig('cost_curve.png')
 plt.show()
+
+
+# ============================================
+# Z-SCORE NORMALIZATION
+# Scales all features to similar range (-2 to +2)
+# Essential for Sprint 2 (multiple features)
+# Formula: x_norm = (x - mean) / std_deviation
+# ============================================
+def zscore_normalize_features(X):
+    mu = np.mean(X, axis=0)      # mean of each feature
+    sigma = np.std(X, axis=0)    # std deviation of each feature
+    X_norm = (X - mu) / sigma    # normalize
+    return X_norm, mu, sigma
+
+# ============================================
+# TEST NORMALIZATION — Sprint 2 prep
+# Two features: tokens + model_type
+# ============================================
+X_multi = np.array([
+    [17,  0],   # "Hi" on gpt-3.5-turbo
+    [92,  1],   # "What is ML?" on gpt-4o
+    [533, 1],   # "Explain..." on gpt-4o
+])
+
+X_norm, X_mu, X_sigma = zscore_normalize_features(X_multi)
+print(f"\nSprint 2 Feature Scaling Test:")
+print(f"Original range:   {np.ptp(X_multi, axis=0)}")
+print(f"Normalized range: {np.ptp(X_norm, axis=0)}")
+print(f"mu:    {X_mu}")
+print(f"sigma: {X_sigma}")
