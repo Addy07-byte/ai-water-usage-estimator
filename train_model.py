@@ -132,3 +132,118 @@ print(f"Original range:   {np.ptp(X_multi, axis=0)}")
 print(f"Normalized range: {np.ptp(X_norm, axis=0)}")
 print(f"mu:    {X_mu}")
 print(f"sigma: {X_sigma}")
+
+
+# ============================================
+# SPRINT 2 — MULTI-FEATURE LINEAR REGRESSION
+# Feature 1: total_tokens
+# Feature 2: model_type (0=gpt-3.5, 1=gpt-4o)
+# Using vectorized gradient descent + zscore norm
+# ============================================
+
+# Training data with 2 features
+X_train_multi = np.array([
+    [17,  0],   # "Hi" on gpt-3.5-turbo
+    [92,  1],   # "What is ML?" on gpt-4o
+    [533, 1],   # "Explain..." on gpt-4o
+])
+
+# TO (model-specific rates — meaningful)
+# Water per token by model (research-based estimates)
+# gpt-3.5-turbo is ~2.5x lighter than gpt-4o
+WATER_PER_TOKEN = {
+    "gpt-3.5": 0.000284,   # lighter model, less compute
+    "gpt-4o":  0.000519,   # heavier model, more compute
+}
+
+y_train_multi = np.array([
+    17  * WATER_PER_TOKEN["gpt-3.5"],  # "Hi" on gpt-3.5
+    92  * WATER_PER_TOKEN["gpt-4o"],   # "What is ML?" on gpt-4o
+    533 * WATER_PER_TOKEN["gpt-4o"],   # "Explain..." on gpt-4o
+])
+
+print(f"\nModel-specific y_train:")
+print(f"Hi gpt-3.5:   {y_train_multi[0]:.6f}L")
+print(f"What is ML:   {y_train_multi[1]:.6f}L")
+print(f"Explain gpt4: {y_train_multi[2]:.6f}L")
+
+# Normalize features
+X_norm_multi, X_mu_multi, X_sigma_multi = zscore_normalize_features(X_train_multi)
+print(f"\nSprint 2 — Normalized training data:")
+print(f"X_norm:\n{X_norm_multi}")
+
+# Multi-feature cost function
+def compute_cost_multi(X, y, w, b):
+    m = X.shape[0]
+    cost = 0
+    for i in range(m):
+        f_wb = np.dot(X[i], w) + b
+        cost += (f_wb - y[i]) ** 2
+    return (1 / (2 * m)) * cost
+
+# Multi-feature gradient
+def compute_gradient_multi(X, y, w, b):
+    m, n = X.shape
+    dj_dw = np.zeros(n)
+    dj_db = 0
+    for i in range(m):
+        f_wb = np.dot(X[i], w) + b
+        err = f_wb - y[i]
+        for j in range(n):
+            dj_dw[j] += err * X[i, j]
+        dj_db += err
+    return dj_dw / m, dj_db / m
+
+# Multi-feature gradient descent
+def gradient_descent_multi(X, y, w_in, b_in, alpha, num_iters):
+    J_history = []
+    w = w_in.copy()
+    b = b_in
+    for i in range(num_iters):
+        dj_dw, dj_db = compute_gradient_multi(X, y, w, b)
+        w = w - alpha * dj_dw
+        b = b - alpha * dj_db
+        if i < 100000:
+            J_history.append(compute_cost_multi(X, y, w, b))
+        if i % math.ceil(num_iters / 10) == 0:
+            print(f"Iteration {i:4}: cost {J_history[-1]:0.2e}  w:{w}  b:{b:.6f}")
+    return w, b, J_history
+
+# Train on normalized data
+w_init_multi = np.zeros(2)
+b_init_multi = 0
+alpha_multi = 0.1    # can use larger alpha after normalization
+iterations_multi = 1000
+
+w_multi, b_multi, J_hist_multi = gradient_descent_multi(
+    X_norm_multi, y_train_multi,
+    w_init_multi, b_init_multi,
+    alpha_multi, iterations_multi
+)
+
+print(f"\nSprint 2 Training Complete!")
+print(f"w = {w_multi}  (w[0]=tokens weight, w[1]=model_type weight)")
+print(f"b = {b_multi:.6f}")
+
+# Test predictions
+print(f"\nSprint 2 Predictions:")
+for tokens, model, label in [(17, 0, "Hi gpt-3.5"), (92, 1, "What is ML gpt-4o"), (533, 1, "Explain gpt-4o")]:
+    x_new = np.array([tokens, model])
+    x_new_norm = (x_new - X_mu_multi) / X_sigma_multi
+    pred = np.dot(x_new_norm, w_multi) + b_multi
+    print(f"{label}: {pred:.6f} liters")
+
+# Plot Sprint 2 cost curve
+plt.figure()
+plt.plot(J_hist_multi)
+plt.title('Sprint 2: Cost vs Iterations (Multi-feature)')
+plt.xlabel('Iteration')
+plt.ylabel('Cost J(w,b)')
+plt.savefig('cost_curve_sprint2.png')
+plt.show()
+
+print(f"\nSprint 2 model parameters for Streamlit app:")
+print(f"W_MULTI = {w_multi.tolist()}")
+print(f"B_MULTI = {b_multi}")
+print(f"X_MU    = {X_mu_multi.tolist()}")
+print(f"X_SIGMA = {X_sigma_multi.tolist()}")
