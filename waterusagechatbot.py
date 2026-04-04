@@ -1,5 +1,6 @@
 import streamlit as st
 import openai
+import numpy as np
 
 # 🔐 Secure API setup
 client = openai.OpenAI(
@@ -8,22 +9,32 @@ client = openai.OpenAI(
 )
 
 # ============================================
-# ML MODEL — trained with gradient descent
-# w and b found automatically from real token data
-# f(tokens) = w * tokens + b
+# SPRINT 2 ML MODEL
+# Multi-feature linear regression
+# Feature 1: total_tokens
+# Feature 2: model_type (0=gpt-3.5-turbo, 1=gpt-4o)
+# w and b found by gradient descent from scratch
+# zscore normalization applied before prediction
+# Model-specific water rates:
+# gpt-3.5-turbo: 0.000284L per token (lighter model)
+# gpt-4o:        0.000519L per token (heavier model)
 # ============================================
-W_TRAINED = 0.000519
-B_TRAINED = 0.000001
+W_MULTI = np.array([0.11814291, 0.00188326])
+B_MULTI = 0.109734
+X_MU    = np.array([214.0, 0.6667])
+X_SIGMA = np.array([227.64, 0.4714])
 
-def estimate_water(total_tokens):
+def estimate_water(total_tokens, model):
     """
-    Predicts water usage using trained linear regression model.
-    f(tokens) = w * tokens + b
-    w and b found by gradient descent on real API token data.
+    Predicts water usage using multi-feature linear regression.
+    Features: total_tokens + model_type
+    w and b found automatically by gradient descent.
     """
-    water = W_TRAINED * total_tokens + B_TRAINED
-    return round(water, 6)
-
+    model_type = 0 if model == "gpt-3.5-turbo" else 1
+    x_new = np.array([total_tokens, model_type])
+    x_norm = (x_new - X_MU) / X_SIGMA
+    water = np.dot(x_norm, W_MULTI) + B_MULTI
+    return round(max(water, 0), 6)
 
 # 🧠 Page setup
 st.set_page_config(page_title="AI Water Usage Estimator", page_icon="💧")
@@ -57,12 +68,13 @@ if st.button("Ask AI"):
         )
         answer = response.choices[0].message.content
 
-        # ADD THIS — capture token data
+        # Capture token data
         prompt_tokens = response.usage.prompt_tokens
         completion_tokens = response.usage.completion_tokens
         total_tokens = response.usage.total_tokens
 
-        water_used = estimate_water(total_tokens)
+        # Sprint 2 multi-feature prediction
+        water_used = estimate_water(total_tokens, model)
 
         # AI Response
         st.markdown("---")
@@ -73,8 +85,9 @@ if st.button("Ask AI"):
         st.subheader("💧 Estimated Water Used")
         st.metric(label="Liters", value=f"{water_used} L")
         st.caption(f"≈ {round(water_used * 33.8, 1)} fluid ounces (~oz)")
+        st.caption("💡 Predicted using multi-feature ML model trained with gradient descent. Features: token count + model type.")
 
-        # ADD THIS — show token data
+        # Token Usage
         st.markdown("---")
         st.subheader("🔢 Token Usage")
         col1, col2, col3 = st.columns(3)
@@ -84,6 +97,3 @@ if st.button("Ask AI"):
 
     else:
         st.warning("Please enter a question.")
-
-
-
