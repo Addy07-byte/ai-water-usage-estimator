@@ -247,3 +247,33 @@ print(f"W_MULTI = {w_multi.tolist()}")
 print(f"B_MULTI = {b_multi}")
 print(f"X_MU    = {X_mu_multi.tolist()}")
 print(f"X_SIGMA = {X_sigma_multi.tolist()}")
+
+
+# ============================================
+# SIGMOID FUNCTION — Sprint 3 classification prep
+# Converts any number to probability between 0 and 1
+# g(z) = 1 / (1 + e^(-z))
+# Used in logistic regression for classification
+# ============================================
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# Test sigmoid behavior
+print("\nSigmoid function test:")
+print(f"sigmoid(-10) = {sigmoid(-10):.6f}  (close to 0 = NO)")
+print(f"sigmoid(0)   = {sigmoid(0):.6f}  (exactly 0.5 = uncertain)")
+print(f"sigmoid(10)  = {sigmoid(10):.6f}  (close to 1 = YES)")
+
+# Visualize sigmoid curve
+z_values = np.linspace(-10, 10, 100)
+plt.figure()
+plt.plot(z_values, sigmoid(z_values), c='b', label='sigmoid(z)')
+plt.axhline(y=0.5, color='r', linestyle='--', label='threshold = 0.5')
+plt.axvline(x=0, color='g', linestyle='--', label='z = 0')
+plt.title('Sigmoid Function — Sprint 3 Classification Prep')
+plt.xlabel('z (wx + b)')
+plt.ylabel('Probability')
+plt.legend()
+plt.savefig('sigmoid_curve.png')
+plt.show()
+print("Sigmoid curve saved to sigmoid_curve.png")
