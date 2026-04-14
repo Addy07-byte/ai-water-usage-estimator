@@ -103,8 +103,21 @@ feature_cols = [c for c in df_encoded.columns
                 if c not in ["water_litres", "regiomn_code", "model_code"]]
 
 X2 = df_encoded[feature_cols].values
-Y2 = df_encoded["water_litres"].values
+y2 = df_encoded["water_litres"].values
 
-X2_train, X2_test, Y2_train, Y
+X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size = 0.2, random_state = 42)
+
+model12 = LinearRegression()
+model12.fit(X2_train, y2_train)
+
+y2_pred = model12.predict(X2_test)
+mae2 = mean_absolute_error(y2_test, y2_pred)
+
+print(f" Old MAE: 0.002531 liters (36% error)")
+print(f" New Mae: {mae2:.6f} litres")
+print(f"Improvement: {((0.002531 - mae2) / 0.002531 * 100):.1f}%")
+
+
+
 
 
