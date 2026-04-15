@@ -49,7 +49,7 @@ print(f"\n Water range : {df.water_litres.min():.6f} to {df.water_litres.max():.
 
 #convert categorial features to numbers
 #ML models need numbers, not strings 
-df["region_code"] = df["region"].map({""
+df["region_code"] = df["region"].map({
 "us-west-oregon": 0, "us-east-iowa":1, "us-south-arizona":2})
 
 df["model_code"] = df["model"].map({
@@ -100,7 +100,7 @@ print(df_encoded.head(3))
 # New feature set with one hot encoding
 
 feature_cols = [c for c in df_encoded.columns
-                if c not in ["water_litres", "regiomn_code", "model_code"]]
+                if c not in ["water_litres", "region_code", "model_code"]]
 
 X2 = df_encoded[feature_cols].values
 y2 = df_encoded["water_litres"].values
@@ -117,7 +117,19 @@ print(f" Old MAE: 0.002531 liters (36% error)")
 print(f" New Mae: {mae2:.6f} litres")
 print(f"Improvement: {((0.002531 - mae2) / 0.002531 * 100):.1f}%")
 
+from sklearn.tree import DecisionTreeRegressor
 
+model3 = DecisionTreeRegressor(max_depth=5, random_state=42)
+model3.fit(X2_train, y2_train)
+
+y3_pred = model3.predict(X2_test)
+mae3 = mean_absolute_error(y2_test, y3_pred)
+
+print(f"\nModel Comparison:")
+print(f"Linear Regression (ordinal):  MAE = 0.002531")
+print(f"Linear Regression (one-hot):  MAE = {mae2:.6f}")
+print(f"Decision Tree (one-hot):      MAE = {mae3:.6f}")
+print(f"\nBest model: {'Decision Tree' if mae3 < mae2 else 'Linear Regression'}")
 
 
 
