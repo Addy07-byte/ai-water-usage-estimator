@@ -150,3 +150,28 @@ print(f"Linear Regression (ordinal):  MAE = 0.002531")
 print(f"Linear Regression (one-hot):  MAE = {mae2:.6f}")
 print(f"Decision Tree (one-hot):      MAE = {mae3:.6f}")
 print(f"\nBest model: {'Decision Tree' if mae3 < mae2 else 'Linear Regression'}")
+
+
+# ── STEP 12: Feature Importance ──
+# Which features does the decision tree rely on most?
+# This tells us what actually drives water usage predictions
+import matplotlib.pyplot as plt
+
+feature_names = feature_cols
+importances = model3.feature_importances_
+
+# Sort by importance
+indices = np.argsort(importances)[::-1]
+
+print("\nFeature Importance Ranking:")
+for i, idx in enumerate(indices):
+    print(f"{i+1}. {feature_names[idx]}: {importances[idx]:.4f}")
+
+# Plot
+plt.figure(figsize=(10, 6))
+plt.bar(range(len(importances)), importances[indices])
+plt.xticks(range(len(importances)), [feature_names[i] for i in indices], rotation=45, ha='right')
+plt.title("Feature Importance - Water Usage Decision Tree")
+plt.tight_layout()
+plt.savefig("feature_importance.png", bbox_inches='tight')
+plt.show()
