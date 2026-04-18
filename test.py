@@ -175,3 +175,44 @@ plt.title("Feature Importance - Water Usage Decision Tree")
 plt.tight_layout()
 plt.savefig("feature_importance.png", bbox_inches='tight')
 plt.show()
+
+
+
+# ── STEP 13: Prediction Function ──
+# Given a real API call, predict how much water it will use
+def predict_water_usage(tokens, region, model_type):
+    """
+    Predict water usage for a single API call.
+    
+    tokens: number of tokens in the request
+    region: "us-east-iowa", "us-west-oregon", or "us-south-arizona"
+    model_type: "gpt-4o", "gpt-4o-mini", or "gpt-3.5-turbo"
+    """
+    # Build input row matching our one-hot encoded features
+    input_data = {col: 0 for col in feature_cols}
+    
+    input_data["tokens"] = tokens
+    input_data["hour"] = 12  # assume midday
+    
+    region_col = f"region_{region}"
+    model_col = f"model_{model_type}"
+    
+    if region_col in input_data:
+        input_data[region_col] = 1
+    if model_col in input_data:
+        input_data[model_col] = 1
+    
+    input_row = np.array([list(input_data.values())])
+    prediction = model3.predict(input_row)[0]
+    
+    return prediction
+
+# Test it with a real example
+test_prediction = predict_water_usage(1000, "us-south-arizona", "gpt-4o")
+print(f"\nPredicted water usage:")
+print(f"1000 tokens, GPT-4o, Arizona: {test_prediction:.6f} liters")
+
+# Compare same request in Oregon
+oregon_prediction = predict_water_usage(1000, "us-west-oregon", "gpt-4o")
+print(f"1000 tokens, GPT-4o, Oregon: {oregon_prediction:.6f} liters")
+print(f"Arizona uses {test_prediction/oregon_prediction:.1f}x more water than Oregon")
