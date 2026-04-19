@@ -1,71 +1,48 @@
-# AI Water Usage Estimator
+# AI Water Usage Estimator v3.0
 
-An AI-powered web app that estimates the water consumption 
-behind every AI query using a machine learning model 
-trained with gradient descent from scratch.
+Live demo: https://ai-water-usage-estimator.streamlit.app
 
-Built to raise awareness about the hidden environmental 
+Built out of curiosity to understand about the hidden environmental 
 costs of AI compute.
 
-## Live Demo
-https://ai-water-usage-estimator.streamlit.app/
+## Key Finding
+The same GPT-4o request uses 4x more water in Arizona 
+than Oregon due to differences in datacenter cooling 
+efficiency (WUE). Source: Li et al. 2023.
 
-## What's New in v2.0
-Replaced hardcoded energy lookup table with a real 
-linear regression model trained using gradient descent 
-implemented from scratch in NumPy.
+## ML Models Compared
+| Model | MAE (liters) | Notes |
+|-------|-------------|-------|
+| Linear Regression (ordinal encoding) | 0.002531 | Baseline |
+| Linear Regression (one-hot encoding) | 0.002401 | 5% improvement |
+| Decision Tree | 0.000659 | Best model, 72% improvement |
 
-Before: every query showed the same water estimate
-After:  water scales dynamically with token usage
-
-Model: f(tokens) = w * tokens + b
-w = 0.000519 (found automatically by gradient descent)
-b = 0.000001 (found automatically by gradient descent)
-Training converged in 1000 iterations from cost 
-1.29e-02 to 2.77e-10
+## Feature Importance
+1. Model type (gpt-4o vs smaller models): 40%
+2. Token count: 38%
+3. Datacenter region: 22%
 
 ## How It Works
-
-1. User submits a query via the Streamlit interface
-2. OpenAI API processes the query and returns a response
-3. App captures real token usage from the API response
-4. Trained ML model predicts water consumption:
-   f(tokens) = 0.000519 * total_tokens + 0.000001
+1. User submits a query via Streamlit interface
+2. OpenAI API processes query and returns response
+3. App captures real token usage from API response
+4. Decision tree model predicts water consumption
+   based on tokens, model type, and datacenter region
 5. Result displayed dynamically per query
 
-Longer prompts = more tokens = more water usage.
-The model learns this relationship from real data.
-
 ## ML Implementation
-- Linear Regression implemented from scratch
-- Gradient Descent in raw NumPy (no sklearn)
-- Training data: real token counts from OpenAI API
-- Cost function: Mean Squared Error J(w,b)
-- w and b initialized at 0, found automatically
+- v1.0: Hardcoded energy lookup table
+- v2.0: Linear regression from scratch in NumPy
+- v3.0: Decision tree with location feature, 
+        72% better than linear regression
 
-## Built With
-- Python, NumPy (ML from scratch)
-- Streamlit (frontend and deployment)
-- OpenAI API (LLM and token data)
-- Streamlit Cloud (hosting)
+## Tech Stack
+Python, NumPy, scikit-learn, Streamlit, OpenAI API
 
-## Version History
-- v1.0: Hardcoded energy lookup table by model type
-- v2.0: Linear regression trained with gradient descent
-- v3.0 (coming): Multiple features (model type, query complexity)
-- v4.0 (coming): Neural network for non-linear relationships
-
-## Future Improvements
-- Multiple input features for higher accuracy
-- Model comparison dashboard
-- Leaderboard for public awareness
-- Neural network upgrade
-- AWS deployment
-
-## Secrets Managed Securely
-OpenAI API key managed via Streamlit Secrets.
+## Citation
+Li, P. et al. (2023). Making AI Less Thirsty.
+arxiv.org/abs/2304.03271
 
 ---
-*This project demonstrates end-to-end ML engineering:
-data collection, model training from scratch, and 
-production deployment.*
+*End-to-end ML engineering: research-backed data 
+generation, model comparison, and production deployment.*
