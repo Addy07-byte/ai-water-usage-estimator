@@ -9,6 +9,7 @@ costs of AI compute.
 The same GPT-4o request uses 4x more water in Arizona 
 than Oregon due to differences in datacenter cooling 
 efficiency (WUE). Source: Li et al. 2023.
+Prediction: 1000 tokens, GPT-4o, Arizona = 0.013260 liters vs Oregon = 0.003284 liters
 
 ## ML Models Compared
 | Model | MAE (liters) | Notes |
